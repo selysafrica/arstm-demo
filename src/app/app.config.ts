@@ -5,7 +5,6 @@ import {
   withComponentInputBinding,
   withInMemoryScrolling,
   withPreloading,
-  withViewTransitions,
 } from '@angular/router';
 import { routes } from './app.routes';
 
@@ -16,7 +15,6 @@ export const appConfig: ApplicationConfig = {
       routes,
       withComponentInputBinding(),
       withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
-      withViewTransitions({ skipInitialTransition: true }),
       withPreloading(PreloadAllModules),
     ),
   ],

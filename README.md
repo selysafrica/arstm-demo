@@ -24,6 +24,15 @@ npm run build      # build de production dans dist/
 | Actualités | `/actualites`, `/actualites/:slug`, `/agenda` (export .ics), `/mediatheque`, `/ressources` |
 | Services | `/carrieres`, `/campus`, `/verifier-diplome`, `/espace`, `/contact` |
 | Transverses | `/recherche`, `/plan-du-site`, `/mentions-legales`, 404 |
+| Espace élèves | `/espace/connexion`, puis `/espace` (tableau de bord), `candidature`, `scolarite`, `paiements`, `commandes`, `documents`, `bibliotheque`, `messages`, `profil` |
+| Back-office | `/admin/connexion`, puis `/admin` (tableau de bord), `pages`, `actualites`, `formations`, `emplois`, `medias`, `bannieres`, `demandes`, `inscriptions`, `newsletter`, `utilisateurs`, `seo`, `journal` |
+
+## Espace élèves et back-office
+
+- Connexion de démo : bouton « compte de démo » (élèves) et « Accès démo (administrateur) » (back-office).
+- Le sélecteur **Rôle** du back-office simule les droits (Administrateur, Validateur, Éditeur, Contributeur) : un contributeur ne peut que soumettre à relecture, un éditeur n’a pas accès aux données personnelles, etc.
+- Ce qui est publié dans le back-office (actualités, agenda, offres d’emploi, bandeau d’alerte, sessions STCW, fiches formation, chiffres des effectifs) apparaît immédiatement sur le site public.
+- Les données sont **en mémoire** : un rechargement complet de la page les réinitialise.
 
 ## Organisation du code
 
@@ -36,6 +45,6 @@ npm run build      # build de production dans dist/
 ## Limites de la démo
 
 - Les contenus, chiffres et montants sont indicatifs ; les valeurs entre crochets (`[numéro]`, `[montant]`) sont à fournir par l’ARSTM.
-- Aucun envoi réel : formulaires, paiement, connexion et vérification de diplôme sont simulés côté navigateur.
+- Aucun envoi réel : formulaires, paiement, connexion, envoi de newsletter et vérification de diplôme sont simulés côté navigateur (pas de serveur ni d’API).
 - FR/EN : l’interface (menus, boutons, pied de page) bascule ; les contenus éditoriaux restent en français.
 # arstm-demo

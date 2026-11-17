@@ -4,7 +4,8 @@ import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../../shared/icon';
 import { PageHero, SectionHead, toneOf } from '../../shared/ui';
-import { CONTINUING_TRACKS, IMG, STCW_SESSIONS, Session, Tone } from '../../data/site';
+import { CONTINUING_TRACKS, IMG, Session, Tone } from '../../data/site';
+import { AdminStore } from '../../admin/admin-store';
 
 type Step = 'form' | 'pay' | 'processing' | 'done';
 
@@ -214,6 +215,7 @@ type Step = 'form' | 'pay' | 'processing' | 'done';
 })
 export default class Continue {
   private readonly fb = inject(FormBuilder);
+  private readonly admin = inject(AdminStore);
   private readonly dlg = viewChild.required<ElementRef<HTMLDialogElement>>('dlg');
   protected readonly img = IMG;
   protected readonly tracks = CONTINUING_TRACKS;
@@ -228,7 +230,7 @@ export default class Continue {
   protected readonly filter = signal('all');
   protected readonly sessions = computed(() => {
     const f = this.filter();
-    return STCW_SESSIONS.filter((s) => (f === 'online' ? s.online : f === 'campus' ? !s.online : f === 'open' ? s.seatsLeft > 0 : true));
+    return this.admin.sessions().map((s) => (s.open ? s : { ...s, seatsLeft: 0 })).filter((s) => (f === 'online' ? s.online : f === 'campus' ? !s.online : f === 'open' ? s.seatsLeft > 0 : true));
   });
 
   protected readonly stepsList = [

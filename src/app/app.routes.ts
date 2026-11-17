@@ -1,4 +1,10 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
+import { StudentStore } from './core/student-store';
+import { AdminStore } from './admin/admin-store';
+
+const studentGuard = () => inject(StudentStore).logged() || inject(Router).createUrlTree(['/espace/connexion']);
+const adminGuard = () => inject(AdminStore).logged() || inject(Router).createUrlTree(['/admin/connexion']);
 
 const t = (title: string) => `${title} — ARSTM`;
 
@@ -30,8 +36,46 @@ export const routes: Routes = [
   { path: 'carrieres', title: t('Centre de carrière'), loadComponent: () => import('./pages/services/careers') },
   { path: 'campus', title: t('Campus et vie étudiante'), loadComponent: () => import('./pages/services/campus') },
   { path: 'verifier-diplome', title: t('Vérifier un diplôme'), loadComponent: () => import('./pages/services/verify') },
-  { path: 'espace', title: t('Espace candidat'), loadComponent: () => import('./pages/services/espace') },
+  { path: 'espace/connexion', title: t('Connexion à l’espace élèves'), loadComponent: () => import('./pages/espace/login') },
+  {
+    path: 'espace',
+    canActivate: [studentGuard],
+    loadComponent: () => import('./pages/espace/layout'),
+    children: [
+      { path: '', title: t('Espace élèves'), loadComponent: () => import('./pages/espace/dashboard') },
+      { path: 'candidature', title: t('Ma candidature'), loadComponent: () => import('./pages/espace/candidature') },
+      { path: 'scolarite', title: t('Scolarité'), loadComponent: () => import('./pages/espace/scolarite') },
+      { path: 'paiements', title: t('Paiements'), loadComponent: () => import('./pages/espace/paiements') },
+      { path: 'commandes', title: t('Commandes'), loadComponent: () => import('./pages/espace/commandes') },
+      { path: 'documents', title: t('Documents'), loadComponent: () => import('./pages/espace/documents') },
+      { path: 'bibliotheque', title: t('Bibliothèque'), loadComponent: () => import('./pages/espace/bibliotheque') },
+      { path: 'messages', title: t('Messages'), loadComponent: () => import('./pages/espace/messages') },
+      { path: 'profil', title: t('Mon profil'), loadComponent: () => import('./pages/espace/profil') },
+    ],
+  },
   { path: 'contact', title: t('Contact'), loadComponent: () => import('./pages/services/contact') },
+
+  { path: 'admin/connexion', title: 'Connexion — Back-office ARSTM', loadComponent: () => import('./admin/login') },
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./admin/layout'),
+    children: [
+      { path: '', title: 'Tableau de bord — Back-office ARSTM', loadComponent: () => import('./admin/pages/dashboard') },
+      { path: 'pages', title: 'Pages — Back-office ARSTM', loadComponent: () => import('./admin/pages/pages') },
+      { path: 'actualites', title: 'Actualités et agenda — Back-office ARSTM', loadComponent: () => import('./admin/pages/news') },
+      { path: 'formations', title: 'Formations et sessions — Back-office ARSTM', loadComponent: () => import('./admin/pages/programs') },
+      { path: 'emplois', title: 'Offres d’emploi — Back-office ARSTM', loadComponent: () => import('./admin/pages/jobs') },
+      { path: 'medias', title: 'Médiathèque — Back-office ARSTM', loadComponent: () => import('./admin/pages/media') },
+      { path: 'bannieres', title: 'Bannières et données — Back-office ARSTM', loadComponent: () => import('./admin/pages/banners') },
+      { path: 'demandes', title: 'Demandes — Back-office ARSTM', loadComponent: () => import('./admin/pages/requests') },
+      { path: 'inscriptions', title: 'Inscriptions et commandes — Back-office ARSTM', loadComponent: () => import('./admin/pages/sales') },
+      { path: 'newsletter', title: 'Newsletter — Back-office ARSTM', loadComponent: () => import('./admin/pages/newsletter') },
+      { path: 'utilisateurs', title: 'Utilisateurs et rôles — Back-office ARSTM', loadComponent: () => import('./admin/pages/users') },
+      { path: 'seo', title: 'Référencement — Back-office ARSTM', loadComponent: () => import('./admin/pages/seo') },
+      { path: 'journal', title: 'Journal d’activité — Back-office ARSTM', loadComponent: () => import('./admin/pages/logs') },
+    ],
+  },
 
   { path: 'recherche', title: t('Recherche'), loadComponent: () => import('./pages/misc/search') },
   { path: 'plan-du-site', title: t('Plan du site'), loadComponent: () => import('./pages/misc/sitemap') },

@@ -207,7 +207,7 @@
     <a routerLink="/actualites" class="f-btn btn-ghost">Toutes les actualités →</a>
   </div>
   <div class="grid grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] gap-5">
-    @for (n of news; track n.slug) {
+    @for (n of news(); track n.slug) {
       <a [routerLink]="['/actualites', n.slug]" class="f-card flex flex-col overflow-hidden rounded-[18px] bg-white text-ink no-underline">
         <img [src]="n.img" [alt]="n.alt" class="block aspect-[16/10] w-full object-cover" loading="lazy" />
         <span class="flex flex-col gap-2 px-5 pt-[18px] pb-[22px]">
@@ -225,7 +225,7 @@
       <a routerLink="/agenda" class="text-[15px] font-bold no-underline">Voir l’agenda →</a>
     </div>
     <ul class="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] gap-3 p-0">
-      @for (e of events; track e.title) {
+      @for (e of events(); track e.title) {
         <li class="flex items-center gap-3.5 rounded-[14px] border border-line-soft bg-white p-3.5">
           <span class="flex h-[58px] w-[58px] flex-none flex-col items-center justify-center rounded-xl leading-none" [style.background]="toneOf(e.tone).soft" [style.color]="toneOf(e.tone).ink">
             <strong class="text-[22px] font-black">{{ e.day }}</strong>

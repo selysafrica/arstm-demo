@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ContentStore } from '../../core/content-store';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../../shared/icon';
 import { PageHero, toneOf } from '../../shared/ui';
-import { EVENTS, EventItem, IMG } from '../../data/site';
+import { EventItem, IMG } from '../../data/site';
 
 /** Agenda dynamique avec ajout au calendrier (EF-ACT-02). */
 @Component({
@@ -61,9 +62,10 @@ import { EVENTS, EventItem, IMG } from '../../data/site';
 export default class Agenda {
   protected readonly img = IMG;
   protected readonly tone = toneOf;
-  protected readonly categories = ['Tous', ...new Set(EVENTS.map((e) => e.category))];
+  private readonly content = inject(ContentStore);
+  protected readonly categories = ['Tous', ...new Set(this.content.events().map((e) => e.category))];
   protected readonly cat = signal('Tous');
-  protected readonly list = computed(() => (this.cat() === 'Tous' ? EVENTS : EVENTS.filter((e) => e.category === this.cat())));
+  protected readonly list = computed(() => (this.cat() === 'Tous' ? this.content.events() : this.content.events().filter((e) => e.category === this.cat())));
 
   /** Génère un fichier .ics téléchargeable (ajout au calendrier). */
   protected ics(e: EventItem) {

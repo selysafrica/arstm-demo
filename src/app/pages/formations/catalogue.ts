@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../../shared/icon';
 import { PageHero, SectionHead } from '../../shared/ui';
 import { ProgramCard } from '../../shared/program-card';
 import { IMG, PROGRAMS, SCHOOLS } from '../../data/site';
+import { AdminStore } from '../../admin/admin-store';
 
 /** Catalogue des formations avec recherche et filtres (EF-FOR-03). */
 @Component({
@@ -39,7 +40,7 @@ import { IMG, PROGRAMS, SCHOOLS } from '../../data/site';
             <select [value]="school()" (change)="schoolSel.set($any($event.target).value)">
               <option value="">Toutes</option>
               @for (s of schools; track s.slug) {
-                <option [value]="s.slug">{{ s.code }} — {{ s.name }}</option>
+                <option [value]="s.slug" [selected]="s.slug === school()">{{ s.code }} — {{ s.name }}</option>
               }
             </select>
           </label>
@@ -120,6 +121,7 @@ import { IMG, PROGRAMS, SCHOOLS } from '../../data/site';
 export default class Catalogue {
   /** Pré-filtre possible via ?ecole=esn */
   readonly ecole = input<string>();
+  private readonly admin = inject(AdminStore);
   protected readonly img = IMG;
   protected readonly schools = SCHOOLS;
   protected readonly domains = [...new Set(PROGRAMS.map((p) => p.domain))].sort();
@@ -137,7 +139,7 @@ export default class Catalogue {
 
   protected readonly results = computed(() => {
     const q = this.q().trim().toLowerCase();
-    return PROGRAMS.filter(
+    return this.admin.programs().filter((p) => p.published).filter(
       (p) =>
         (!this.school() || p.school === this.school()) &&
         (!this.domain() || p.domain === this.domain()) &&

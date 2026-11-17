@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ContentStore } from '../../core/content-store';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../../shared/icon';
 import { PageHero, toneOf } from '../../shared/ui';
-import { EVENTS, IMG, NEWS, NEWS_CATEGORIES, PRESS } from '../../data/site';
+import { IMG, PRESS } from '../../data/site';
 
 /** Actualités par catégorie, revue de presse, archives (EF-ACT-01, EF-ACT-04). */
 @Component({
@@ -61,7 +62,7 @@ import { EVENTS, IMG, NEWS, NEWS_CATEGORIES, PRESS } from '../../data/site';
         <aside class="flex flex-col gap-5 lg:sticky lg:top-28">
           <div class="flex flex-col gap-3 rounded-[22px] bg-white p-5 shadow-card">
             <strong class="flex items-center gap-2 text-[18px] text-ink"><app-icon name="calendar" class="text-blue" />À venir</strong>
-            @for (e of events; track e.title) {
+            @for (e of events(); track e.title) {
               <a routerLink="/agenda" class="flex items-center gap-3 rounded-xl p-1.5 text-ink no-underline hover:bg-tint-soft">
                 <span class="flex h-12 w-12 flex-none flex-col items-center justify-center rounded-[10px] leading-none" [style.background]="tone(e.tone).soft" [style.color]="tone(e.tone).ink">
                   <strong class="text-[18px]">{{ e.day }}</strong><span class="text-[11.5px] font-bold">{{ e.month }}</span>
@@ -91,12 +92,13 @@ import { EVENTS, IMG, NEWS, NEWS_CATEGORIES, PRESS } from '../../data/site';
 })
 export default class News {
   protected readonly img = IMG;
-  protected readonly categories = NEWS_CATEGORIES;
-  protected readonly events = EVENTS.slice(0, 4);
+  private readonly content = inject(ContentStore);
+  protected readonly categories = ['Toutes', ...new Set(this.content.publishedNews().map((n) => n.category))];
+  protected readonly events = computed(() => this.content.events().slice(0, 4));
   protected readonly press = PRESS;
   protected readonly tone = toneOf;
   protected readonly cat = signal('Toutes');
-  protected readonly filtered = computed(() => (this.cat() === 'Toutes' ? NEWS : NEWS.filter((n) => n.category === this.cat())));
+  protected readonly filtered = computed(() => (this.cat() === 'Toutes' ? this.content.publishedNews() : this.content.publishedNews().filter((n) => n.category === this.cat())));
   protected readonly featured = computed(() => this.filtered()[0]);
   protected readonly rest = computed(() => this.filtered().slice(1));
 }

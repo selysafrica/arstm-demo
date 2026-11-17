@@ -4,12 +4,11 @@ import { Icon } from '../../shared/icon';
 import { Faq, ResourceCard, SectionHead, toneOf } from '../../shared/ui';
 import { ContactForm } from '../../shared/contact-form';
 import { TPipe } from '../../core/i18n';
+import { ContentStore } from '../../core/content-store';
 import {
   ADMISSION_RESOURCES,
-  EVENTS,
   FAQ,
   IMG,
-  NEWS,
   QUICK_CHIPS,
   SCHOOLS,
   TONES,
@@ -29,8 +28,9 @@ export default class Home {
   protected readonly contacts = USEFUL_CONTACTS;
   protected readonly schools = SCHOOLS;
   protected readonly resources = ADMISSION_RESOURCES;
-  protected readonly news = NEWS.slice(0, 3);
-  protected readonly events = EVENTS.slice(0, 3);
+  private readonly content = inject(ContentStore);
+  protected readonly news = computed(() => this.content.publishedNews().slice(0, 3));
+  protected readonly events = computed(() => this.content.events().slice(0, 3));
   protected readonly faq = FAQ.slice(0, 4);
   protected readonly tones = TONES;
   protected readonly toneOf = toneOf;

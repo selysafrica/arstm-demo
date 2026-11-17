@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { AdminStore } from '../../admin/admin-store';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../../shared/icon';
 import { PageHero, SectionHead, Subnav, toneOf } from '../../shared/ui';
-import { ENROLMENT, IMG, KEY_FIGURES, MEMBER_STATES, SCHOOLS, STUDENTS_BY_COUNTRY } from '../../data/site';
+import { IMG, KEY_FIGURES, MEMBER_STATES, SCHOOLS, STUDENTS_BY_COUNTRY } from '../../data/site';
 import { INSTITUTION_LINKS } from './nav';
 
 @Component({
@@ -118,13 +119,13 @@ import { INSTITUTION_LINKS } from './nav';
             <strong class="text-[18px] text-ink">Évolution des effectifs</strong><br />
             <span class="text-[14.5px] text-subtle">Élèves et stagiaires inscrits, formation initiale</span>
           </figcaption>
-          <div class="flex h-[220px] items-end gap-3 border-b border-line pb-0" role="img" [attr.aria-label]="enrolLabel">
-            @for (e of enrolment; track e.year; let last = $last) {
+          <div class="flex h-[220px] items-end gap-3 border-b border-line pb-0" role="img" [attr.aria-label]="enrolLabel()">
+            @for (e of enrolment(); track e.year; let last = $last) {
               <div class="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
                 <span class="text-[13px] font-bold" [class.text-blue]="last" [class.text-muted]="!last">{{ e.value }}</span>
                 <span
                   class="w-full max-w-[52px] rounded-t-lg transition-[height] duration-700"
-                  [style.height.%]="(e.value / maxEnrol) * 80"
+                  [style.height.%]="(e.value / maxEnrol()) * 80"
                   [class.bg-blue]="last"
                   [class.bg-sky]="!last"
                 ></span>
@@ -132,7 +133,7 @@ import { INSTITUTION_LINKS } from './nav';
             }
           </div>
           <div class="-mt-2 flex gap-3">
-            @for (e of enrolment; track e.year) {
+            @for (e of enrolment(); track e.year) {
               <span class="flex-1 text-center text-[13px] text-subtle">{{ e.year }}</span>
             }
           </div>
@@ -164,10 +165,11 @@ export default class Presentation {
   protected readonly figures = KEY_FIGURES;
   protected readonly states = MEMBER_STATES;
   protected readonly schools = SCHOOLS;
-  protected readonly enrolment = ENROLMENT;
+  private readonly data = inject(AdminStore);
+  protected readonly enrolment = computed(() => this.data.vizData().enrolment);
   protected readonly countries = STUDENTS_BY_COUNTRY;
-  protected readonly maxEnrol = Math.max(...ENROLMENT.map((e) => e.value));
-  protected readonly enrolLabel = 'Effectifs : ' + ENROLMENT.map((e) => `${e.year} ${e.value}`).join(', ');
+  protected readonly maxEnrol = computed(() => Math.max(...this.enrolment().map((e) => e.value)));
+  protected readonly enrolLabel = computed(() => 'Effectifs : ' + this.enrolment().map((e) => `${e.year} ${e.value}`).join(', '));
   protected tone(s: { tone: Parameters<typeof toneOf>[0] }) {
     return toneOf(s.tone);
   }

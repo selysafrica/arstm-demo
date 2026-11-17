@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Icon } from '../../shared/icon';
 import { PageHero, toneOf } from '../../shared/ui';
-import { NEWS } from '../../data/site';
+import { ContentStore } from '../../core/content-store';
 import NotFound from '../misc/not-found';
 
 @Component({
@@ -67,8 +67,9 @@ export default class ArticlePage {
     });
   }
   readonly slug = input.required<string>();
-  protected readonly a = computed(() => NEWS.find((n) => n.slug === this.slug()));
-  protected readonly others = computed(() => NEWS.filter((n) => n.slug !== this.slug()).slice(0, 3));
+  private readonly content = inject(ContentStore);
+  protected readonly a = computed(() => this.content.publishedNews().find((n) => n.slug === this.slug()));
+  protected readonly others = computed(() => this.content.publishedNews().filter((n) => n.slug !== this.slug()).slice(0, 3));
   protected readonly tone = toneOf;
   protected readonly copied = signal(false);
   protected readonly share = [

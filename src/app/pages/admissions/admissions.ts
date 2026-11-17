@@ -24,9 +24,9 @@ import { CALENDAR, FAQ, IMG, TESTIMONIALS, Tone } from '../../data/site';
       </div>
     </app-page-hero>
 
-    <div class="container-x section-y relative z-[1] grid items-start gap-[clamp(24px,4vw,48px)] pt-[clamp(40px,5vw,64px)] lg:grid-cols-[260px_1fr]">
+    <div class="container-x section-y relative z-[1] grid grid-cols-[minmax(0,1fr)] items-start gap-[clamp(24px,4vw,48px)] pt-[clamp(40px,5vw,64px)] lg:grid-cols-[260px_minmax(0,1fr)]">
       <!-- Sommaire -->
-      <nav aria-label="Sommaire de la rubrique Admissions" class="lg:sticky lg:top-28">
+      <nav aria-label="Sommaire de la rubrique Admissions" class="min-w-0 lg:sticky lg:top-28">
         <ul class="panel m-0 flex list-none gap-1 overflow-x-auto p-2 lg:flex-col [scrollbar-width:none]">
           @for (s of toc; track s.id) {
             <li class="flex-none">

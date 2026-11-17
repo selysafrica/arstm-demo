@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ContentStore } from '../../core/content-store';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../../shared/icon';
 import { PageHero, SectionHead } from '../../shared/ui';
-import { IMG, JOBS, TESTIMONIALS } from '../../data/site';
+import { IMG, TESTIMONIALS } from '../../data/site';
 
 /** Centre de carrière et offres de stage / emploi (EF-POR-02, EF-COM-03, EF-COM-04). */
 @Component({
@@ -77,6 +78,7 @@ export default class Careers {
   protected readonly kinds = ['Toutes', 'Emploi', 'Stage'];
   protected readonly kind = signal('Toutes');
   protected readonly applied = signal<string | null>(null);
-  protected readonly jobs = computed(() => (this.kind() === 'Toutes' ? JOBS : JOBS.filter((j) => j.kind === this.kind())));
+  private readonly content = inject(ContentStore);
+  protected readonly jobs = computed(() => this.content.jobs().filter((j) => j.published && (this.kind() === 'Toutes' || j.kind === this.kind())));
   protected readonly tips = ['Réussir son premier embarquement', 'Rédiger un CV maritime', 'Préparer un entretien en anglais', 'Valoriser ses certificats STCW'];
 }

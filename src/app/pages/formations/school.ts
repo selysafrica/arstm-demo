@@ -3,9 +3,10 @@ import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Icon } from '../../shared/icon';
 import { PageHero, SectionHead, toneOf } from '../../shared/ui';
-import { NEWS, SCHOOLS, TESTIMONIALS, programsOf, schoolBySlug } from '../../data/site';
+import { NEWS, SCHOOLS, TESTIMONIALS, schoolBySlug } from '../../data/site';
 import NotFound from '../misc/not-found';
 import { ProgramCard } from '../../shared/program-card';
+import { AdminStore } from '../../admin/admin-store';
 
 /** Page école / entité : parcours et débouchés (EF-FOR-02, EF-FOR-05). */
 @Component({
@@ -118,7 +119,8 @@ export default class SchoolPage {
   }
   readonly school = input.required<string>();
   protected readonly data = computed(() => schoolBySlug(this.school()));
-  protected readonly programs = computed(() => programsOf(this.school()));
+  private readonly admin = inject(AdminStore);
+  protected readonly programs = computed(() => this.admin.programs().filter((p) => p.published && p.school === this.school()));
   protected readonly tone = computed(() => toneOf(this.data()?.tone ?? 'blue'));
   protected readonly testimonials = TESTIMONIALS;
   protected readonly news = NEWS[0];

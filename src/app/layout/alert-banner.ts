@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, afterNextRender, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, afterNextRender, computed, inject, signal } from '@angular/core';
+import { ContentStore } from '../core/content-store';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../shared/icon';
 
@@ -8,7 +9,7 @@ import { Icon } from '../shared/icon';
   imports: [RouterLink, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (visible()) {
+    @if (visible() && alert().enabled) {
       <aside
         role="status"
         aria-label="Annonce importante"
@@ -16,9 +17,9 @@ import { Icon } from '../shared/icon';
       >
         <span class="icon-tile !h-10 !w-10 bg-orange-soft text-orange-ink"><app-icon name="bell" [size]="18" /></span>
         <div class="flex flex-1 flex-col gap-1">
-          <strong class="text-[15.5px] leading-snug text-ink">Concours d’entrée 2027 : inscriptions du 15 janvier au 15 mars</strong>
-          <a routerLink="/admissions" fragment="concours" class="text-[14.5px] font-bold text-blue no-underline" (click)="dismiss()"
-            >Voir le calendrier →</a
+          <strong class="text-[15.5px] leading-snug text-ink">{{ alert().text }}</strong>
+          <a [routerLink]="alert().link" [fragment]="alert().fragment" class="text-[14.5px] font-bold text-blue no-underline" (click)="dismiss()"
+            >En savoir plus →</a
           >
         </div>
         <button
@@ -34,6 +35,8 @@ import { Icon } from '../shared/icon';
   `,
 })
 export class AlertBanner {
+  private readonly content = inject(ContentStore);
+  protected readonly alert = computed(() => this.content.alert());
   protected readonly visible = signal(false);
 
   constructor() {
