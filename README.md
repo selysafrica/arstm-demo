@@ -22,7 +22,7 @@ make setup EMAIL=vous@domaine   # premier déploiement sur le VPS
 make deploy                     # mises à jour
 ```
 
-En local : `make build` puis `make up`, et le site est sur http://127.0.0.1:3439.
+En local : `make build` puis `make up`, et le site est sur http://127.0.0.1:3440 (port modifiable avec `make set-port PORT=…`).
 
 ## Pages
 

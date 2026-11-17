@@ -2,7 +2,7 @@
 # =============================================================================
 # ARSTM demo — image de production
 #   1. build  : Node 22 compile l’application Angular
-#   2. runtime: nginx non root sert le build sur le port 3439
+#   2. runtime: nginx non root sert le build sur le port interne 8080
 # =============================================================================
 
 # ---- 1. Build -------------------------------------------------------------
@@ -28,8 +28,8 @@ LABEL org.opencontainers.image.title="arstm-demo" \
 COPY deploy/nginx/arstm-docker.conf /etc/nginx/conf.d/default.conf
 COPY --from=build --chown=nginx:nginx /app/dist/arstm-demo/browser /usr/share/nginx/html
 
-EXPOSE 3439
+EXPOSE 8080
 USER nginx
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:3439/healthz || exit 1
+  CMD wget -qO- http://127.0.0.1:8080/healthz || exit 1

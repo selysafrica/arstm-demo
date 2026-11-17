@@ -3,7 +3,7 @@
 #
 # Architecture :
 #   Internet ──► nginx de l’hôte :80/:443 (arstm.selys.app, TLS Let's Encrypt)
-#                   └─► proxy ──► 127.0.0.1:3439 ──► conteneur arstm-web
+#                   └─► proxy ──► 127.0.0.1:$(PORT) ──► conteneur arstm-web :8080
 #                                                    (nginx non root + build Angular)
 #
 # Premier déploiement (sur le serveur, dans le clone du dépôt) :
@@ -16,12 +16,15 @@
 #   make up                           # démarre / met à jour le conteneur
 #   make deploy                       # git pull + up + nettoyage + contrôle
 #
-# Toutes les variables sont surchargeables : make deploy BRANCH=dev PORT=3440
+# Port de l’hôte : 3440 par défaut, enregistré dans .env via « make set-port PORT=… »
+# Les autres variables sont surchargeables : make deploy BRANCH=dev
 # =============================================================================
 
 # ---- Paramètres ------------------------------------------------------------
+# Le port de l’hôte est lu dans .env (partagé avec docker compose) : make set-port PORT=…
+-include .env
 DOMAIN          ?= arstm.selys.app
-PORT            ?= 3439
+PORT            ?= 3440
 EMAIL           ?=
 BRANCH          ?= main
 ACME_ROOT       ?= /var/www/certbot
@@ -51,7 +54,7 @@ RENDER = sed -e 's|__DOMAIN__|$(DOMAIN)|g' \
              -e 's|__ACME_ROOT__|$(ACME_ROOT)|g'
 
 .DEFAULT_GOAL := help
-.PHONY: help doctor check-dns server-deps \
+.PHONY: help doctor check-dns server-deps set-port free-port check-port \
         build up down restart logs ps wait prune \
         nginx-init nginx-ssl nginx-test nginx-reload nginx-logs nginx-remove \
         certbot certbot-renew-test setup deploy status remote-deploy
@@ -91,11 +94,30 @@ check-dns: ## Vérifie que le domaine pointe vers ce serveur
 	  if [ -n "$$ip_dns" ] && [ "$$ip_dns" != "$$ip_srv" ]; then \
 	    echo "  ⚠ le domaine ne pointe pas vers ce serveur : certbot échouera."; fi
 
+# ---- Port ------------------------------------------------------------------
+set-port: ## Enregistre le port de l’hôte dans .env (ex. make set-port PORT=3450)
+	@echo "PORT=$(PORT)" > .env
+	@echo "✓ Port $(PORT) enregistré dans .env (docker compose + vhost nginx)."
+	@echo "  Si le site est déjà en ligne : make up && make nginx-init"
+
+free-port: ## Trouve un port libre à partir de 3440
+	@p=3440; \
+	while ss -ltnH "sport = :$$p" 2>/dev/null | grep -q .; do p=$$((p+1)); done; \
+	echo "Port libre : $$p   →   make set-port PORT=$$p"
+
+check-port: ## Vérifie que le port de l’hôte est libre (ou déjà pris par ce conteneur)
+	@if command -v ss >/dev/null && ss -ltnH "sport = :$(PORT)" 2>/dev/null | grep -q . \
+	  && ! $(DOCKER_SUDO) docker port $(CONTAINER) 2>/dev/null | grep -q ":$(PORT)$$"; then \
+	  echo "✗ Le port $(PORT) est déjà utilisé par un autre service :"; \
+	  $(SUDO) ss -ltnp "sport = :$(PORT)" 2>/dev/null | tail -n +2; \
+	  $(MAKE) --no-print-directory free-port; exit 1; \
+	fi
+
 # ---- Docker ----------------------------------------------------------------
 build: ## Construit l’image Docker (build Angular inclus)
 	$(COMPOSE) build
 
-up: ## Démarre ou met à jour le conteneur sur 127.0.0.1:3439 et attend qu’il réponde
+up: check-port ## Démarre ou met à jour le conteneur sur 127.0.0.1:$(PORT) et attend qu’il réponde
 	PORT=$(PORT) $(COMPOSE) up -d --build --remove-orphans
 	@$(MAKE) --no-print-directory wait
 
@@ -128,6 +150,10 @@ prune: ## Supprime les anciennes images non utilisées
 nginx-init: ## Installe le vhost public du domaine (HTTP, ou HTTPS si le certificat existe)
 	@test -d $(NGINX_AVAILABLE) || (echo "$(NGINX_AVAILABLE) introuvable : nginx est-il installé ?" && exit 1)
 	$(SUDO) mkdir -p $(ACME_ROOT)/.well-known/acme-challenge
+	@# Ancien mode sans Docker : serveur interne de l’hôte, désormais inutile
+	@if [ -e $(NGINX_ENABLED)/arstm-app.conf ]; then \
+	  echo "Désactivation de l’ancien serveur interne (arstm-app.conf)"; \
+	  $(SUDO) unlink $(NGINX_ENABLED)/arstm-app.conf; fi
 	@mkdir -p $(BUILD_TMP)
 	@if [ -f /etc/letsencrypt/live/$(DOMAIN)/fullchain.pem ]; then \
 	  echo "Certificat déjà présent : installation du vhost HTTPS"; \
