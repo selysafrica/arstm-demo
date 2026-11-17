@@ -1,6 +1,21 @@
 <!-- HERO -->
 <section class="relative z-[1] flex min-h-[760px] flex-col text-white">
   <img [src]="img.hero" alt="" class="absolute inset-0 block h-full w-full object-cover" fetchpriority="high" />
+  <!-- Vidéo d’ambiance : la photo reste affichée tant que la vidéo n’est pas en lecture, puis fondu enchaîné -->
+  <video
+    #heroVideo
+    aria-hidden="true"
+    tabindex="-1"
+    class="absolute inset-0 block h-full w-full object-cover transition-opacity duration-1000 ease-out"
+    [class.opacity-0]="!videoReady()"
+    muted
+    loop
+    playsinline
+    disablepictureinpicture
+    preload="none"
+    [poster]="img.hero"
+    (playing)="videoReady.set(true)"
+  ></video>
   <div
     aria-hidden="true"
     class="absolute inset-0"

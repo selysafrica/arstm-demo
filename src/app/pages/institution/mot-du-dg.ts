@@ -16,7 +16,7 @@ import { INSTITUTION_LINKS } from './nav';
     <section class="container-x section-y relative z-[1] pt-[clamp(48px,6vw,80px)]">
       <div class="flex flex-wrap items-start gap-[clamp(28px,5vw,64px)]">
         <figure class="relative m-0 flex-[1_1_320px] overflow-hidden rounded-[22px] shadow-photo md:sticky md:top-28">
-          <img [src]="img.conference" alt="Le Directeur Général de l’ARSTM lors d’une conférence" class="block aspect-[4/5] w-full object-cover" />
+          <img [src]="img.dg" alt="Le Directeur Général de l’ARSTM à son bureau" width="900" height="1125" class="block aspect-[4/5] w-full object-cover object-top" />
           <figcaption class="absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-[rgba(10,18,48,.9)] to-transparent p-5 pt-16 text-white">
             <strong class="text-[18px]">Le Directeur Général</strong>
             <span class="text-[14.5px] text-hero-text">Académie Régionale des Sciences et Techniques de la Mer</span>
