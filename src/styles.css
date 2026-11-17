@@ -1,0 +1,532 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------
+   ARSTM — design tokens (repris de la maquette « F · Accueil »)
+   ------------------------------------------------------------------ */
+@theme {
+  --font-sans: 'Figtree', system-ui, sans-serif;
+
+  --color-navy: #1f2d6e;
+  --color-navy-deep: #13204f;
+  --color-navy-line: #263a78;
+  --color-blue: #1f5fa8;
+  --color-sky: #9cc8f5;
+  --color-orange: #e39b4b;
+  --color-orange-soft: #fdebd8;
+  --color-orange-ink: #9a4e0e;
+
+  --color-ink: #111827;
+  --color-body: #2b3445;
+  --color-text: #374151;
+  --color-muted: #4b5563;
+  --color-subtle: #6b7280;
+
+  --color-tint: #e3eefb;
+  --color-tint-strong: #d6e6f9;
+  --color-tint-soft: #eef4fb;
+  --color-line: #dce7f5;
+  --color-line-soft: #e5ecf5;
+  --color-field: #f8fafd;
+  --color-field-line: #d5deea;
+  --color-navy-tint: #e6e9f5;
+
+  --color-green: #2e9e6b;
+  --color-green-soft: #e3f4ec;
+  --color-green-ink: #1e7a50;
+  --color-violet: #6c5dd3;
+  --color-violet-soft: #eceafb;
+  --color-violet-ink: #4b3fb0;
+  --color-teal: #0e8fa8;
+  --color-teal-soft: #e0f3f7;
+  --color-teal-ink: #0b6e82;
+
+  --color-foot-text: #c3cee6;
+  --color-foot-muted: #8fa0c6;
+  --color-hero-text: #dce6f5;
+
+  --shadow-soft: 0 24px 60px -36px rgba(31, 45, 110, 0.45);
+  --shadow-card: 0 12px 30px -24px rgba(31, 45, 110, 0.45);
+  --shadow-photo: 0 30px 60px -32px rgba(31, 45, 110, 0.55);
+  --shadow-header: 0 16px 40px -20px rgba(0, 0, 0, 0.45);
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Semantic z-index scale */
+:root {
+  --z-base: 1;
+  --z-dropdown: 40;
+  --z-sticky: 50;
+  --z-backdrop: 60;
+  --z-modal: 70;
+  --z-toast: 80;
+}
+
+@layer base {
+html {
+  scroll-padding-top: 110px;
+}
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-body);
+  font-size: 17px;
+  line-height: 1.6;
+  background: #f6f9fd;
+  -webkit-font-smoothing: antialiased;
+}
+html.text-lg-mode body {
+  font-size: 19px;
+}
+html.contrast-mode {
+  --color-subtle: #374151;
+  --color-muted: #1f2937;
+  --color-text: #111827;
+}
+
+a {
+  color: var(--color-blue);
+}
+a:hover {
+  color: var(--color-navy);
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+:focus-visible {
+  outline: 3px solid var(--color-orange);
+  outline-offset: 2px;
+}
+::selection {
+  background: var(--color-sky);
+  color: var(--color-navy);
+}
+}
+
+/* ------------------------------------------------------------------
+   Composants partagés (classes de la maquette)
+   ------------------------------------------------------------------ */
+@layer components {
+  .page-bg {
+    background: linear-gradient(180deg, #e8f1fb 0%, #f6f9fd 30%, #eaf2fb 65%, #f6f9fd 100%);
+  }
+
+  .container-x {
+    max-width: 1240px;
+    margin-inline: auto;
+    padding-inline: clamp(16px, 3vw, 40px);
+  }
+  .section-y {
+    padding-bottom: clamp(64px, 8vw, 104px);
+  }
+
+  .f-nav {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 11px;
+    border-radius: 8px;
+    transition: background-color 0.25s;
+  }
+  .f-nav:hover,
+  .f-nav[aria-expanded='true'] {
+    background: var(--color-tint);
+    color: var(--color-navy);
+  }
+  .f-nav.is-active {
+    background: var(--color-tint-strong);
+    color: var(--color-navy);
+  }
+
+  .f-card {
+    transition:
+      transform 0.35s var(--ease-out-quint),
+      box-shadow 0.35s;
+  }
+  .f-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 48px -28px rgba(31, 45, 110, 0.45);
+  }
+
+  .f-chip {
+    color: #fff;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    transition:
+      background-color 0.25s,
+      border-color 0.25s;
+  }
+  .f-chip:hover {
+    background: rgba(255, 255, 255, 0.28);
+    color: #fff;
+  }
+
+  .f-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition:
+      transform 0.25s,
+      background-color 0.25s,
+      box-shadow 0.25s;
+  }
+  .f-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -12px rgba(31, 45, 110, 0.6);
+  }
+  .f-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-primary {
+    background: var(--color-blue);
+    color: #fff;
+    padding: 14px 22px;
+    border-radius: 12px;
+  }
+  .btn-primary:hover {
+    color: #fff;
+    background: #1a5293;
+  }
+  .btn-accent {
+    background: var(--color-orange);
+    color: var(--color-navy);
+    font-weight: 800;
+    padding: 14px 22px;
+    border-radius: 12px;
+  }
+  .btn-accent:hover {
+    color: var(--color-navy);
+  }
+  .btn-ghost {
+    background: #fff;
+    color: var(--color-navy);
+    padding: 12px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+  }
+  .btn-ghost:hover {
+    color: var(--color-navy);
+  }
+  .btn-pill {
+    background: var(--color-blue);
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 999px;
+  }
+  .btn-pill:hover {
+    color: #fff;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1px solid var(--color-line);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    color: var(--color-blue);
+    font-weight: 700;
+  }
+
+  .h-display {
+    margin: 0;
+    font-size: clamp(36px, 4.6vw, 60px);
+    line-height: 1.05;
+    font-weight: 900;
+    color: var(--color-ink);
+  }
+  .h-section {
+    margin: 0;
+    font-size: clamp(28px, 3.2vw, 40px);
+    line-height: 1.1;
+    font-weight: 900;
+    color: var(--color-ink);
+  }
+
+  .panel {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid #fff;
+    border-radius: 22px;
+    box-shadow: var(--shadow-soft);
+  }
+  .surface {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .tag {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+  .badge {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-muted);
+    border: 1px solid #e5e7eb;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+
+  .icon-tile {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--color-field-line);
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 400;
+    font-size: 16px;
+    background: var(--color-field);
+    color: var(--color-ink);
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s,
+      background-color 0.2s;
+  }
+  .field textarea {
+    padding: 12px 14px;
+    resize: vertical;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: var(--color-blue);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(31, 95, 168, 0.18);
+  }
+  .field input::placeholder,
+  .field textarea::placeholder {
+    color: #6b7280;
+  }
+  .field .error {
+    color: #b42318;
+    font-weight: 600;
+    font-size: 13.5px;
+  }
+  .field.invalid input,
+  .field.invalid select,
+  .field.invalid textarea {
+    border-color: #d92d20;
+  }
+  .field .hint {
+    color: var(--color-subtle);
+    font-weight: 400;
+    font-size: 13.5px;
+  }
+
+  .prose-arstm p {
+    margin: 0 0 1em;
+    color: var(--color-text);
+  }
+  .prose-arstm h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--color-ink);
+    margin: 1.6em 0 0.5em;
+    line-height: 1.2;
+  }
+  .prose-arstm h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--color-ink);
+    margin: 1.4em 0 0.4em;
+  }
+  .prose-arstm ul {
+    margin: 0 0 1em;
+    padding-left: 1.2em;
+    color: var(--color-text);
+  }
+  .prose-arstm li {
+    margin-bottom: 0.35em;
+  }
+  .prose-arstm strong {
+    color: var(--color-blue);
+    font-weight: 700;
+  }
+
+  /* Carte à ton d’école / de rubrique (formations, ressources) */
+    .tone-card {
+      transition:
+        transform 0.35s var(--ease-out-quint),
+        box-shadow 0.35s,
+        border-color 0.25s;
+    }
+    .tone-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--tone);
+      box-shadow: 0 24px 48px -28px rgba(31, 45, 110, 0.45);
+    }
+    .tone-mono {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      min-width: 48px;
+      height: 48px;
+      padding: 0 8px;
+      border-radius: 14px;
+      background: var(--tone-soft);
+      color: var(--tone-ink);
+      font-size: 13.5px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--tone) 22%, transparent);
+    }
+    .tone-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: var(--color-tint);
+      color: var(--color-blue);
+      transition:
+        background-color 0.25s,
+        color 0.25s,
+        transform 0.35s var(--ease-out-quint);
+    }
+    .tone-card:hover .tone-arrow {
+      background: var(--color-blue);
+      color: #fff;
+      transform: translateX(3px);
+    }
+
+  .sr-only-x {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Motion
+   ------------------------------------------------------------------ */
+.f-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  animation: fblob 22s ease-in-out infinite alternate;
+}
+@keyframes fblob {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(60px, -40px);
+  }
+}
+.f-fade {
+  animation: ffade 0.6s var(--ease-out-quint);
+}
+@keyframes ffade {
+  from {
+    opacity: 0.7;
+    transform: scale(1.01);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.f-rise {
+  animation: frise 0.7s var(--ease-out-quint) both;
+}
+@keyframes frise {
+  from {
+    transform: translateY(14px);
+  }
+  to {
+    transform: none;
+  }
+}
+.f-pop {
+  animation: fpop 0.22s var(--ease-out-quint) both;
+}
+@keyframes fpop {
+  from {
+    transform: translateY(-6px) scale(0.985);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* Welcome animation (EF-ACC-04) — light, non-blocking */
+.hero-in > * {
+  animation: frise 0.8s var(--ease-out-quint) both;
+}
+.hero-in > *:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.hero-in > *:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.hero-in > *:nth-child(4) {
+  animation-delay: 0.18s;
+}
+.hero-in > *:nth-child(5) {
+  animation-delay: 0.24s;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.28s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

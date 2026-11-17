@@ -1,0 +1,283 @@
+<!-- HERO -->
+<section class="relative z-[1] flex min-h-[760px] flex-col text-white">
+  <img [src]="img.hero" alt="" class="absolute inset-0 block h-full w-full object-cover" fetchpriority="high" />
+  <div
+    aria-hidden="true"
+    class="absolute inset-0"
+    style="background: linear-gradient(180deg, rgba(14,24,62,.82) 0%, rgba(20,34,84,.72) 55%, rgba(14,24,62,.9) 100%)"
+  ></div>
+
+  <div
+    class="hero-in relative z-[2] mx-auto flex max-w-[980px] flex-1 flex-col items-center justify-center gap-[22px] text-center"
+    style="padding: 168px clamp(16px, 3vw, 40px) 64px"
+  >
+    <span class="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/14 px-3.5 py-1.5 text-[14.5px] font-semibold">
+      <span aria-hidden="true" class="h-2 w-2 rounded-full bg-orange"></span>{{ 'heroKicker' | t }}
+    </span>
+    <h1 class="m-0 text-[clamp(42px,5.6vw,72px)] leading-[1.05] font-extrabold">
+      {{ 'heroTitleA' | t }} <em class="text-sky italic">{{ 'heroTitleEm' | t }}</em> ?
+    </h1>
+    <p class="m-0 max-w-[56ch] text-[19px] text-hero-text">{{ 'heroLead' | t }}</p>
+    <form
+      role="search"
+      class="flex w-full max-w-[760px] gap-2 rounded-[14px] bg-white p-2 shadow-[0_20px_50px_-20px_rgba(0,0,0,.6)]"
+      (submit)="search($event)"
+    >
+      <label for="f-q" class="sr-only-x">{{ 'search' | t }}</label>
+      <span aria-hidden="true" class="inline-flex items-center pl-2.5 text-subtle"><app-icon name="search" /></span>
+      <input
+        id="f-q"
+        type="search"
+        [placeholder]="'heroPlaceholder' | t"
+        class="min-w-0 flex-1 border-none bg-transparent px-2 font-[inherit] text-[17px] text-ink outline-none"
+        [value]="query()"
+        (input)="query.set($any($event.target).value)"
+      />
+      <button type="submit" class="f-btn min-h-[50px] rounded-[10px] bg-blue px-[22px] text-white">
+        <span class="hidden sm:inline">{{ 'search' | t }}</span>
+        <app-icon name="search" class="sm:hidden" />
+      </button>
+    </form>
+    <div class="flex max-w-[860px] flex-wrap justify-center gap-2">
+      @for (c of chips; track c.label) {
+        <a class="f-chip" [routerLink]="c.path" [fragment]="c.fragment">{{ c.label }}</a>
+      }
+    </div>
+  </div>
+  <img
+    [src]="img.flags"
+    alt="Drapeaux des quinze pays membres"
+    class="relative z-[2] mx-auto mb-7 block h-[18px] w-auto max-w-[90%] opacity-95"
+  />
+</section>
+
+<!-- À PROPOS + carrousel -->
+<section class="container-x relative z-[1]" style="padding-block: clamp(64px, 8vw, 104px)">
+  <div class="flex flex-wrap items-center gap-[clamp(28px,5vw,72px)]">
+    <figure class="relative m-0 flex-[1_1_460px] overflow-hidden rounded-[22px] shadow-photo" aria-roledescription="carrousel" aria-label="Photos de l’ARSTM">
+      @for (p of [photo()]; track p.img) {
+        <img class="f-fade block aspect-[5/4] w-full object-cover" [src]="p.img" [alt]="p.alt" loading="lazy" />
+      }
+      <figcaption class="absolute bottom-4 left-4 rounded-lg bg-[rgba(15,23,42,.65)] px-3 py-1.5 text-[14px] text-white" aria-live="polite">
+        {{ photo().cap }} <span class="text-hero-text">· {{ photoIdx() + 1 }}/{{ photos.length }}</span>
+      </figcaption>
+      <button
+        type="button"
+        aria-label="Photo précédente"
+        class="absolute top-1/2 left-3.5 inline-flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-none bg-white/90 text-navy transition-colors hover:bg-white"
+        (click)="prev()"
+      >
+        <app-icon name="chevron-left" [size]="18" [stroke]="2.4" />
+      </button>
+      <button
+        type="button"
+        aria-label="Photo suivante"
+        class="absolute top-1/2 right-3.5 inline-flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-none bg-white/90 text-navy transition-colors hover:bg-white"
+        (click)="next()"
+      >
+        <app-icon name="chevron-right" [size]="18" [stroke]="2.4" />
+      </button>
+    </figure>
+    <div class="flex flex-[1_1_440px] flex-col gap-[18px]">
+      <span class="text-[14px] font-bold tracking-[.04em] text-blue">À PROPOS DE NOUS</span>
+      <h2 class="m-0 text-[clamp(40px,4.6vw,60px)] leading-none font-black text-blue">L’ARSTM</h2>
+      <p class="m-0 text-text">
+        Créée en 1987 à Abidjan, l’Académie Régionale des Sciences et Techniques de la Mer forme les
+        <strong class="font-bold text-blue">officiers, techniciens et cadres</strong> du secteur maritime, portuaire et logistique de
+        <strong class="font-bold text-blue">quinze pays francophones</strong> d’Afrique de l’Ouest et du Centre.
+      </p>
+      <p class="m-0 text-text">
+        Notre engagement : <strong class="font-bold text-blue">qualité, discipline et excellence</strong>. Plus de 10 000 cadres formés, des
+        formations conformes à la convention STCW et un management certifié ISO 9001:2015, sur un campus de 33 hectares.
+      </p>
+      <a routerLink="/institution" class="f-btn btn-primary mt-1.5 self-start">En savoir plus <app-icon name="arrow-up-right" [size]="16" [stroke]="2.2" /></a>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTS UTILES -->
+<section class="container-x section-y relative z-[1]">
+  <div class="flex flex-col gap-[22px] rounded-3xl border border-white bg-white/82 p-[clamp(22px,3vw,36px)] shadow-soft">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3.5">
+        <span aria-hidden="true" class="inline-flex h-12 w-12 items-center justify-center rounded-[14px] bg-tint text-blue"><app-icon name="phone" [size]="22" /></span>
+        <span>
+          <strong class="text-[24px] font-extrabold text-ink">Contacts utiles</strong><br />
+          <span class="text-[15px] text-subtle">Cliquez sur un numéro pour appeler directement</span>
+        </span>
+      </div>
+      <span class="rounded-full bg-orange-soft px-2.5 py-1 text-[13px] font-extrabold text-orange-ink">Lun – ven</span>
+    </div>
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] gap-3">
+      @for (c of contacts; track c.label) {
+        @if (c.href) {
+          <a
+            [href]="c.href"
+            class="flex items-center justify-between gap-2.5 rounded-xl border border-line-soft bg-white px-4 py-3.5 text-ink no-underline transition-colors hover:border-line hover:bg-tint-soft"
+          >
+            <span>{{ c.label }}</span>
+            <strong class="rounded-lg bg-tint-soft px-2.5 py-1 text-[15px] text-navy">{{ c.value }}</strong>
+          </a>
+        } @else {
+          <div class="flex items-center justify-between gap-2.5 rounded-xl border border-line-soft bg-white px-4 py-3.5 text-ink">
+            <span>{{ c.label }}</span>
+            <strong class="rounded-lg bg-tint-soft px-2.5 py-1 text-[15px] text-navy">{{ c.value }}</strong>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ÉCOLES -->
+<section class="container-x section-y relative z-[1] flex flex-col items-center gap-[22px] text-center">
+  <app-section-head pill="Excellence maritime" lead="Trois écoles et trois entités spécialisées, du pont à la machine, du quai à la direction.">
+    <h2 class="h-display">Nos <span class="text-blue">Écoles</span> et instituts</h2>
+  </app-section-head>
+  <div role="tablist" aria-label="Écoles" class="flex max-w-[980px] flex-wrap justify-center gap-2.5" (keydown)="onTabKey($event)">
+    @for (s of schools; track s.slug; let i = $index) {
+      <button
+        type="button"
+        role="tab"
+        [id]="'tab-' + s.slug"
+        aria-controls="school-panel"
+        [attr.aria-selected]="i === schoolIdx()"
+        [tabIndex]="i === schoolIdx() ? 0 : -1"
+        (click)="schoolIdx.set(i)"
+        class="min-h-[44px] cursor-pointer rounded-full border-[1.5px] px-[18px] font-[inherit] text-[14.5px] font-bold tracking-[.02em] uppercase transition-colors"
+        [class]="i === schoolIdx() ? 'border-blue bg-blue text-white' : 'border-[#DCE4EF] bg-white text-ink hover:border-blue'"
+      >
+        {{ s.tab }}
+      </button>
+    }
+  </div>
+  @for (s of [school()]; track s.slug) {
+    <article
+      id="school-panel"
+      role="tabpanel"
+      [attr.aria-labelledby]="'tab-' + s.slug"
+      class="f-fade relative min-h-[500px] w-full overflow-hidden rounded-3xl text-left shadow-[0_30px_60px_-32px_rgba(31,45,110,.6)]"
+    >
+      <img [src]="s.img" [alt]="s.alt" class="absolute inset-0 block h-full w-full object-cover" loading="lazy" />
+      <div aria-hidden="true" class="absolute inset-0" style="background: linear-gradient(180deg, rgba(10,18,48,0) 30%, rgba(10,18,48,.85) 100%)"></div>
+      <div class="absolute flex flex-col gap-2.5 text-white" style="left: clamp(20px,3vw,40px); right: clamp(20px,3vw,40px); bottom: clamp(24px,3vw,40px)">
+        <h3 class="m-0 text-[clamp(26px,3vw,40px)] leading-[1.1] font-extrabold uppercase">{{ s.name }}</h3>
+        <p class="m-0 max-w-[62ch] text-hero-text">{{ s.text }}</p>
+        <a [routerLink]="['/formations', s.slug]" class="f-btn mt-1 self-start rounded-[10px] bg-white px-[18px] py-2.5 text-[15px] text-navy hover:text-navy"
+          >En savoir plus →</a
+        >
+      </div>
+    </article>
+  }
+  <div class="flex gap-2" aria-hidden="true">
+    @for (s of schools; track s.slug; let i = $index) {
+      <span class="h-2 rounded-full transition-all duration-300" [style.width.px]="i === schoolIdx() ? 26 : 8" [class]="i === schoolIdx() ? 'bg-blue' : 'bg-[#B9C8DD]'"></span>
+    }
+  </div>
+  <a routerLink="/formations" class="f-btn btn-pill">Voir toutes les formations →</a>
+</section>
+
+<!-- ADMISSION -->
+<section class="container-x section-y relative z-[1] flex flex-col gap-7">
+  <app-section-head pill="Ressources pratiques" lead="Guides, procédures et calendriers pour préparer votre candidature.">
+    <h2 class="h-display">Admission à l’<span class="text-blue">ARSTM</span></h2>
+  </app-section-head>
+  <div class="grid grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] gap-[18px]">
+    @for (r of resources; track r.title) {
+      <app-resource-card
+        [tone]="r.tone"
+        [icon]="r.icon"
+        [title]="r.title"
+        [desc]="r.desc"
+        [badge]="r.badge"
+        [cta]="r.cta"
+        [meta]="r.meta"
+        [metaIcon]="r.metaIcon"
+        [path]="r.path"
+        [fragment]="r.fragment"
+      />
+    }
+  </div>
+</section>
+
+<!-- ACTUALITÉS & AGENDA -->
+<section class="container-x section-y relative z-[1] flex flex-col gap-7">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <h2 class="h-display">Actualités <span class="text-blue">&amp; agenda</span></h2>
+    <a routerLink="/actualites" class="f-btn btn-ghost">Toutes les actualités →</a>
+  </div>
+  <div class="grid grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] gap-5">
+    @for (n of news; track n.slug) {
+      <a [routerLink]="['/actualites', n.slug]" class="f-card flex flex-col overflow-hidden rounded-[18px] bg-white text-ink no-underline">
+        <img [src]="n.img" [alt]="n.alt" class="block aspect-[16/10] w-full object-cover" loading="lazy" />
+        <span class="flex flex-col gap-2 px-5 pt-[18px] pb-[22px]">
+          <span class="text-[13.5px] text-subtle">
+            <span class="tag mr-1.5" [style.background]="toneOf(n.tone).soft" [style.color]="toneOf(n.tone).ink">{{ n.category }}</span>{{ n.date }}
+          </span>
+          <strong class="text-[18px] leading-[1.35] text-ink">{{ n.title }}</strong>
+        </span>
+      </a>
+    }
+  </div>
+  <div class="flex flex-col gap-3 rounded-[22px] border border-white bg-white/85 p-[clamp(16px,2.5vw,24px)] shadow-soft">
+    <div class="flex flex-wrap items-center justify-between gap-3 px-1">
+      <strong class="flex items-center gap-2.5 text-[20px] font-extrabold text-ink"><app-icon name="calendar" class="text-blue" />Événements à venir</strong>
+      <a routerLink="/agenda" class="text-[15px] font-bold no-underline">Voir l’agenda →</a>
+    </div>
+    <ul class="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] gap-3 p-0">
+      @for (e of events; track e.title) {
+        <li class="flex items-center gap-3.5 rounded-[14px] border border-line-soft bg-white p-3.5">
+          <span class="flex h-[58px] w-[58px] flex-none flex-col items-center justify-center rounded-xl leading-none" [style.background]="toneOf(e.tone).soft" [style.color]="toneOf(e.tone).ink">
+            <strong class="text-[22px] font-black">{{ e.day }}</strong>
+            <span class="text-[12.5px] font-bold">{{ e.month }}</span>
+          </span>
+          <span class="flex flex-col">
+            <strong class="leading-snug text-ink">{{ e.title }}</strong>
+            <span class="text-[14px] text-subtle">{{ e.place }} · {{ e.time }}</span>
+          </span>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="relative z-[1] mx-auto flex max-w-[1000px] flex-col gap-6" style="padding: 0 clamp(16px, 3vw, 40px) clamp(64px, 8vw, 104px)">
+  <app-section-head pill="Questions fréquentes" [dot]="true" lead="Les réponses aux questions les plus courantes des candidats.">
+    <h2 class="m-0 text-[clamp(40px,4.6vw,56px)] leading-[1.05] font-black text-blue">Besoin d’aide ?</h2>
+  </app-section-head>
+  <app-faq [items]="faq" />
+  <a routerLink="/admissions" fragment="faq" class="self-center text-[15px] font-bold no-underline">Toutes les questions →</a>
+</section>
+
+<!-- CONTACT -->
+<section class="container-x section-y relative z-[1] flex flex-col gap-7">
+  <app-section-head lead="Une question sur une formation, un concours ou une inscription ? Nous vous répondons.">
+    <h2 class="m-0 text-[clamp(40px,4.6vw,56px)] leading-[1.05] font-black text-ink">Contactez <span class="text-blue">notre équipe</span></h2>
+  </app-section-head>
+  <div class="grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] gap-[18px]">
+    <div class="flex items-start gap-3.5 rounded-[18px] border-t-4 border-blue bg-white p-[22px]">
+      <span class="icon-tile bg-blue text-white"><app-icon name="pin" /></span>
+      <span><span class="text-[12.5px] font-bold text-blue">ADRESSE</span><br /><strong class="text-ink">Yopougon Niangon Lokoa</strong><br /><span class="text-[15px] text-muted">B.P. V 158 Abidjan, Côte d’Ivoire</span></span>
+    </div>
+    <div class="flex items-start gap-3.5 rounded-[18px] border-t-4 border-blue bg-white p-[22px]">
+      <span class="icon-tile bg-blue text-white"><app-icon name="phone" /></span>
+      <span><span class="text-[12.5px] font-bold text-blue">STANDARD</span><br /><a href="tel:+2252723460808" class="font-bold text-ink no-underline">(225) 27 23 46 08 08</a><br /><a href="tel:+2250101080802" class="text-[15px] text-muted no-underline">(225) 01 01 08 08 02</a></span>
+    </div>
+    <div class="flex items-start gap-3.5 rounded-[18px] border-t-4 border-blue bg-white p-[22px]">
+      <span class="icon-tile bg-blue text-white"><app-icon name="mail" /></span>
+      <span><span class="text-[12.5px] font-bold text-blue">E-MAIL</span><br /><a href="mailto:arstminfo@arstm.net" class="font-bold text-ink no-underline">arstminfo&#64;arstm.net</a><br /><span class="text-[15px] text-muted">Réponse sous 48 h ouvrées</span></span>
+    </div>
+  </div>
+  <div class="flex flex-wrap gap-5">
+    <app-contact-form class="flex-[1_1_460px]" />
+    <figure class="m-0 flex flex-[1_1_400px] flex-col overflow-hidden rounded-[22px] bg-blue text-white">
+      <figcaption class="flex items-center gap-3 px-5 py-[18px]">
+        <span aria-hidden="true" class="inline-flex h-10 w-10 items-center justify-center rounded-[10px] bg-white/18"><app-icon name="pin" [size]="18" /></span>
+        <span><strong>Campus de l’ARSTM</strong><br /><span class="text-[14px] text-hero-text">Yopougon, Abidjan · 33 hectares</span></span>
+        <a routerLink="/institution/situation" class="ml-auto rounded-lg bg-white/18 px-3 py-1.5 text-[14px] font-bold text-white no-underline hover:bg-white/28 hover:text-white">Itinéraire</a>
+      </figcaption>
+      <img [src]="img.aerien" alt="Vue aérienne du campus de l’ARSTM" class="block min-h-[260px] w-full flex-1 object-cover" loading="lazy" />
+    </figure>
+  </div>
+</section>

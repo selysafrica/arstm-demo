@@ -1,0 +1,290 @@
+<a
+  href="#contenu"
+  class="fixed top-2 left-2 z-[80] -translate-y-24 rounded-lg bg-navy px-4 py-2 font-bold text-white no-underline focus:translate-y-0"
+  >{{ 'skip' | t }}</a
+>
+
+<header
+  class="fixed inset-x-0 z-[50] transition-[top] duration-300"
+  [style.top.px]="scrolled() ? 8 : 18"
+  style="padding-inline: clamp(12px, 3vw, 40px)"
+>
+  <div
+    class="relative mx-auto flex max-w-[1240px] items-center justify-between gap-x-3 gap-y-2.5 rounded-2xl bg-white/92 px-3.5 py-2.5 backdrop-blur-[10px] transition-shadow duration-300"
+    [style.box-shadow]="scrolled() ? '0 18px 44px -18px rgba(14,24,62,.5)' : 'var(--shadow-header)'"
+  >
+    <a routerLink="/" class="flex flex-none items-center gap-2.5 no-underline" aria-label="ARSTM — retour à l’accueil">
+      <img [src]="img.logo" alt="Logo de l’ARSTM" width="46" height="46" class="block h-10 w-10 sm:h-[46px] sm:w-[46px]" />
+      <span class="text-[20px] font-black tracking-[.02em] text-navy">ARSTM</span>
+    </a>
+
+    <!-- Navigation desktop -->
+    <nav aria-label="Menu principal" class="hidden items-center gap-0.5 text-[16px] xl:flex">
+      <a routerLink="/" class="f-nav whitespace-nowrap" [class.is-active]="section() === 'home'" [attr.aria-current]="section() === 'home' ? 'page' : null">{{
+        'home' | t
+      }}</a>
+      <button
+        type="button"
+        class="f-nav inline-flex cursor-pointer items-center gap-1 border-none bg-transparent font-[inherit] text-[16px] whitespace-nowrap"
+        [attr.aria-expanded]="panel() === 'profiles'"
+        aria-controls="mega-panel"
+        (click)="toggle('profiles')"
+      >
+        {{ 'lookingFor' | t }}
+        <app-icon name="chevron-down" [size]="16" class="transition-transform duration-300" [style.transform]="panel() === 'profiles' ? 'rotate(180deg)' : null" />
+      </button>
+      @for (item of nav; track item.key) {
+        <button
+          type="button"
+          class="f-nav inline-flex cursor-pointer items-center gap-1 border-none bg-transparent font-[inherit] text-[16px] whitespace-nowrap"
+          [class.is-active]="section() === item.key"
+          [attr.aria-expanded]="panel() === item.key"
+          aria-controls="mega-panel"
+          (click)="toggle($any(item.key))"
+        >
+          {{ item.key | t }}
+        </button>
+      }
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        class="hidden h-[42px] cursor-pointer items-center gap-1 rounded-[10px] border border-line bg-white px-2.5 font-[inherit] text-[14px] font-bold text-navy transition-colors hover:bg-tint sm:inline-flex"
+        (click)="i18n.toggle()"
+        [attr.aria-label]="i18n.isEn() ? 'Passer le site en français' : 'Switch site to English'"
+      >
+        <span [class.text-subtle]="i18n.isEn()" [class.font-black]="!i18n.isEn()">FR</span>
+        <span aria-hidden="true" class="text-line">|</span>
+        <span [class.text-subtle]="!i18n.isEn()" [class.font-black]="i18n.isEn()">EN</span>
+      </button>
+      <button
+        type="button"
+        class="hidden h-[42px] w-[42px] cursor-pointer items-center justify-center rounded-[10px] border border-line bg-white text-navy transition-colors hover:bg-tint sm:inline-flex"
+        [attr.aria-label]="'allSites' | t"
+        [title]="'allSites' | t"
+        (click)="openPortal()"
+      >
+        <app-icon name="grid" [size]="18" />
+      </button>
+      <a routerLink="/espace" class="f-btn hidden rounded-[10px] bg-blue px-4 py-2.5 text-[15px] whitespace-nowrap text-white hover:text-white lg:inline-flex">
+        <app-icon name="user" [size]="16" /><span class="xl:max-[1359px]:sr-only">{{ 'candidateSpace' | t }}</span>
+      </a>
+      <a routerLink="/admissions/candidater" class="f-btn rounded-[10px] bg-orange px-3 py-2.5 text-[15px] font-extrabold whitespace-nowrap text-navy hover:text-navy sm:px-4">{{
+        'apply' | t
+      }}</a>
+      <button
+        type="button"
+        class="inline-flex h-[42px] w-[42px] cursor-pointer items-center justify-center rounded-[10px] border-none bg-tint text-navy xl:hidden"
+        [attr.aria-expanded]="mobileOpen()"
+        aria-controls="mobile-menu"
+        [attr.aria-label]="mobileOpen() ? ('close' | t) : ('menu' | t)"
+        (click)="toggleMobile()"
+      >
+        <app-icon [name]="mobileOpen() ? 'x' : 'menu'" [size]="20" />
+      </button>
+    </div>
+
+    <!-- Méga-menu desktop -->
+    @if (panel()) {
+      <div
+        id="mega-panel"
+        class="f-pop absolute inset-x-0 top-[calc(100%+10px)] z-[40] hidden overflow-hidden rounded-2xl bg-white shadow-[0_30px_70px_-30px_rgba(14,24,62,.55)] xl:block"
+      >
+        @if (panel() === 'profiles') {
+          <div class="grid grid-cols-[1.1fr_3fr]">
+            <form role="search" class="flex flex-col justify-between gap-5 bg-navy p-7 text-white" (submit)="submitSearch($event)">
+              <div class="flex flex-col gap-2">
+                <strong class="text-[22px] leading-tight">Que cherchez-vous ?</strong>
+                <span class="text-[15px] text-hero-text">Formations, démarches, documents, actualités.</span>
+              </div>
+              <label class="flex items-center gap-2 rounded-xl bg-white p-1.5 pl-3 text-subtle">
+                <app-icon name="search" [size]="18" />
+                <span class="sr-only-x">Rechercher sur le site</span>
+                <input
+                  type="search"
+                  class="min-w-0 flex-1 border-none bg-transparent font-[inherit] text-[16px] text-ink outline-none"
+                  placeholder="Ex : certificat STCW"
+                  [value]="query()"
+                  (input)="query.set($any($event.target).value)"
+                />
+                <button type="submit" class="f-btn h-10 rounded-[9px] bg-blue px-3.5 text-[14px] text-white">OK</button>
+              </label>
+            </form>
+            <div class="grid grid-cols-4 gap-1 p-5">
+              @for (p of profiles; track p.profile) {
+                <div class="flex flex-col gap-1 rounded-xl p-3">
+                  <span class="mb-1.5 flex items-center gap-2.5 font-extrabold text-ink">
+                    <span class="icon-tile !h-9 !w-9 !rounded-[10px] bg-tint text-blue"><app-icon [name]="p.icon" [size]="18" /></span>
+                    {{ p.profile }}
+                  </span>
+                  @for (l of p.links; track l.label) {
+                    <a
+                      [routerLink]="l.path"
+                      [fragment]="l.fragment"
+                      class="rounded-lg px-2 py-1.5 text-[15px] text-text no-underline transition-colors hover:bg-tint hover:text-navy"
+                      >{{ l.label }}</a
+                    >
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        } @else if (activeItem(); as item) {
+          <div class="grid grid-cols-[1.1fr_3fr]">
+            <div class="flex flex-col justify-between gap-6 bg-tint-soft p-7">
+              <div class="flex flex-col gap-2">
+                <strong class="text-[24px] leading-tight font-black text-navy">{{ item.key | t }}</strong>
+                <span class="text-[15px] text-muted">Toutes les pages de la rubrique, en un clic.</span>
+              </div>
+              <a [routerLink]="item.path" class="f-btn btn-primary self-start !px-4 !py-2.5 text-[15px]"
+                >Voir la rubrique <app-icon name="arrow-up-right" [size]="16"
+              /></a>
+            </div>
+            <div class="grid grid-cols-2 gap-6 p-6">
+              @for (g of item.groups; track g.title) {
+                <div class="flex flex-col gap-0.5">
+                  <span class="mb-2 px-2 text-[13px] font-bold tracking-[.04em] text-blue uppercase">{{ g.title }}</span>
+                  @for (l of g.links; track l.label) {
+                    <a
+                      [routerLink]="l.path"
+                      [fragment]="l.fragment"
+                      class="group flex flex-col rounded-lg px-2 py-2 no-underline transition-colors hover:bg-tint"
+                    >
+                      <span class="font-semibold text-ink group-hover:text-navy">{{ l.label }}</span>
+                      @if (l.desc) {
+                        <span class="text-[14px] text-subtle">{{ l.desc }}</span>
+                      }
+                    </a>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Menu mobile -->
+  @if (mobileOpen()) {
+    <div
+      id="mobile-menu"
+      class="f-pop mx-auto mt-2.5 flex max-h-[calc(100dvh-110px)] max-w-[1240px] flex-col gap-3 overflow-y-auto rounded-2xl bg-white p-4 shadow-[0_30px_70px_-30px_rgba(14,24,62,.55)] xl:hidden"
+    >
+      <form role="search" class="flex items-center gap-2 rounded-xl border border-line-soft bg-field p-1.5 pl-3 text-subtle" (submit)="submitSearch($event)">
+        <app-icon name="search" [size]="18" />
+        <span class="sr-only-x">Rechercher sur le site</span>
+        <input
+          type="search"
+          class="min-w-0 flex-1 border-none bg-transparent font-[inherit] text-[16px] text-ink outline-none"
+          placeholder="Rechercher…"
+          [value]="query()"
+          (input)="query.set($any($event.target).value)"
+        />
+        <button type="submit" class="f-btn h-10 rounded-[9px] bg-blue px-3.5 text-[14px] text-white">OK</button>
+      </form>
+      <nav aria-label="Menu principal (mobile)" class="flex flex-col">
+        <a routerLink="/" class="rounded-lg px-3 py-3 font-bold text-ink no-underline hover:bg-tint">{{ 'home' | t }}</a>
+        @for (item of nav; track item.key) {
+          <div class="border-t border-line-soft">
+            <button
+              type="button"
+              class="flex w-full cursor-pointer items-center justify-between rounded-lg border-none bg-transparent px-3 py-3 text-left font-[inherit] text-[17px] font-bold text-ink"
+              [attr.aria-expanded]="mobileSection() === item.key"
+              (click)="mobileSection.set(mobileSection() === item.key ? null : item.key)"
+            >
+              {{ item.key | t }}
+              <app-icon name="chevron-down" class="transition-transform" [style.transform]="mobileSection() === item.key ? 'rotate(180deg)' : null" />
+            </button>
+            @if (mobileSection() === item.key) {
+              <div class="f-pop flex flex-col pb-2 pl-3">
+                <a [routerLink]="item.path" class="rounded-lg px-3 py-2 font-semibold text-blue no-underline">Vue d’ensemble</a>
+                @for (g of item.groups; track g.title) {
+                  @for (l of g.links; track l.label) {
+                    <a [routerLink]="l.path" [fragment]="l.fragment" class="rounded-lg px-3 py-2 text-[15.5px] text-text no-underline hover:bg-tint">{{ l.label }}</a>
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+      </nav>
+      <button type="button" class="f-btn w-full justify-start rounded-[10px] bg-tint-soft px-4 py-3 text-[15px] text-navy" (click)="openPortal()">
+        <app-icon name="grid" [size]="16" />{{ 'allSites' | t }}
+      </button>
+      <div class="grid grid-cols-2 gap-2">
+        <a routerLink="/espace" class="f-btn rounded-[10px] bg-blue px-4 py-3 text-[15px] text-white hover:text-white"
+          ><app-icon name="user" [size]="16" />{{ 'candidateSpace' | t }}</a
+        >
+        <button type="button" class="f-btn rounded-[10px] bg-tint px-4 py-3 text-[15px] text-navy" (click)="i18n.toggle()">
+          <app-icon name="globe" [size]="16" />{{ i18n.isEn() ? 'Français' : 'English' }}
+        </button>
+      </div>
+    </div>
+  }
+</header>
+
+<!-- Portail « Tous les sites et applications » (EF-ACC-05) -->
+<dialog
+  #portalDialog
+  class="m-auto w-[min(920px,calc(100vw-32px))] max-w-none rounded-3xl border-none bg-white p-0 text-body shadow-[0_40px_90px_-30px_rgba(14,24,62,.7)] backdrop:bg-[rgba(14,24,62,.55)] backdrop:backdrop-blur-[3px]"
+  aria-labelledby="portal-title"
+  (click)="onDialogClick($event)"
+>
+  <div class="flex flex-col gap-5 p-[clamp(20px,3vw,32px)]">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 id="portal-title" class="m-0 text-[clamp(22px,2.6vw,28px)] font-black text-ink">{{ 'allSites' | t }}</h2>
+        <p class="m-0 text-[15px] text-subtle">Espaces, services et entités de l’Académie.</p>
+      </div>
+      <button
+        type="button"
+        class="inline-flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full border-none bg-tint text-navy"
+        [attr.aria-label]="'close' | t"
+        (click)="closePortal()"
+      >
+        <app-icon name="x" />
+      </button>
+    </div>
+    <ul class="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-2.5 p-0">
+      @for (p of portal; track p.title) {
+        <li>
+          <a
+            [routerLink]="p.path"
+            (click)="closePortal()"
+            class="f-card flex h-full items-center gap-3 rounded-[14px] border border-line-soft bg-white p-3.5 font-semibold text-ink no-underline"
+          >
+            <span class="icon-tile !h-10 !w-10 !rounded-[10px] bg-tint text-blue"><app-icon [name]="p.icon" [size]="18" /></span>
+            {{ p.title }}
+          </a>
+        </li>
+      }
+    </ul>
+    <div class="flex flex-wrap items-center gap-2 border-t border-line-soft pt-4">
+      <span class="mr-1 text-[14px] font-bold text-muted">{{ 'accessibility' | t }} :</span>
+      <button
+        type="button"
+        class="inline-flex min-h-[40px] cursor-pointer items-center gap-2 rounded-full border border-line px-3.5 font-[inherit] text-[14px] font-semibold"
+        [class.bg-blue]="a11y.largeText()"
+        [class.text-white]="a11y.largeText()"
+        [class.bg-white]="!a11y.largeText()"
+        [attr.aria-pressed]="a11y.largeText()"
+        (click)="a11y.largeText.set(!a11y.largeText())"
+      >
+        <app-icon name="type" [size]="16" />{{ 'textSize' | t }}
+      </button>
+      <button
+        type="button"
+        class="inline-flex min-h-[40px] cursor-pointer items-center gap-2 rounded-full border border-line px-3.5 font-[inherit] text-[14px] font-semibold"
+        [class.bg-blue]="a11y.contrast()"
+        [class.text-white]="a11y.contrast()"
+        [class.bg-white]="!a11y.contrast()"
+        [attr.aria-pressed]="a11y.contrast()"
+        (click)="a11y.contrast.set(!a11y.contrast())"
+      >
+        <app-icon name="contrast" [size]="16" />{{ 'contrast' | t }}
+      </button>
+    </div>
+  </div>
+</dialog>
