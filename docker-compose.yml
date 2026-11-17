@@ -17,6 +17,10 @@ services:
     image: arstm-demo:${IMAGE_TAG:-latest}
     container_name: arstm-web
     restart: unless-stopped
+    # Réseau « bridge » par défaut de Docker (docker0) : aucun réseau dédié n’est créé.
+    # Évite l’erreur « all predefined address pools have been fully subnetted »
+    # sur un serveur qui héberge déjà beaucoup de projets Docker.
+    network_mode: bridge
     ports:
       - "${BIND_ADDR:-127.0.0.1}:${PORT:-3439}:3439"
     # Système de fichiers en lecture seule : seul /tmp (pid, caches nginx) est inscriptible
