@@ -13,18 +13,13 @@ npm start          # http://localhost:4200
 npm run build      # build de production dans dist/
 ```
 
-## Déploiement (arstm.selys.app)
+## Déploiement Docker (arstm.selys.app)
 
-Configs nginx dans `deploy/nginx/`, image dans `Dockerfile` et `docker-compose.yml`, commandes dans le `Makefile` (`make help`). Guide complet : [deploy/README.md](deploy/README.md).
+Image dans `Dockerfile` et `docker-compose.yml`, vhost nginx de l’hôte dans `deploy/nginx/`, commandes dans le `Makefile` (`make help`). Guide complet : [deploy/README.md](deploy/README.md).
 
 ```bash
-# Avec Docker (recommandé)
-make docker-setup EMAIL=vous@domaine   # premier déploiement sur le VPS
-make docker-deploy                     # mises à jour
-
-# Sans Docker
-make setup EMAIL=vous@domaine
-make deploy
+make setup EMAIL=vous@domaine   # premier déploiement sur le VPS
+make deploy                     # mises à jour
 ```
 
 En local : `make build` puis `make up`, et le site est sur http://127.0.0.1:3439.
