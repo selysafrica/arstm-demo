@@ -13,6 +13,15 @@ npm start          # http://localhost:4200
 npm run build      # build de production dans dist/
 ```
 
+## Déploiement (arstm.selys.app)
+
+Configs nginx dans `deploy/nginx/` et commandes dans le `Makefile` (`make help`). Guide complet : [deploy/README.md](deploy/README.md).
+
+```bash
+make setup EMAIL=vous@domaine   # premier déploiement sur le VPS
+make deploy                     # mises à jour
+```
+
 ## Pages
 
 | Rubrique | Routes |
