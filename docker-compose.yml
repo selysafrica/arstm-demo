@@ -1,0 +1,40 @@
+# =============================================================================
+# ARSTM demo — Docker Compose
+#
+#   docker compose up -d --build      # construit l’image et démarre le conteneur
+#
+# Le conteneur n’écoute que sur 127.0.0.1:3439 de l’hôte : il n’est pas exposé
+# sur Internet. Le nginx de l’hôte (vhost arstm.selys.app + certbot) fait le
+# reverse proxy HTTPS vers ce port (voir deploy/README.md).
+# =============================================================================
+name: arstm
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: arstm-demo:${IMAGE_TAG:-latest}
+    container_name: arstm-web
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${PORT:-3439}:3439"
+    # Système de fichiers en lecture seule : seul /tmp (pid, caches nginx) est inscriptible
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3439/healthz"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

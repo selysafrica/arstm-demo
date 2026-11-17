@@ -12,6 +12,11 @@
 # Mises à jour suivantes :
 #   make deploy                       # git pull + build + publish + reload
 #
+# Variante Docker (le build tourne dans un conteneur nginx sur 127.0.0.1:3439) :
+#   make docker-install               # Docker Engine + Compose v2 (si absents)
+#   make docker-setup EMAIL=vous@domaine
+#   make docker-deploy                # mises à jour
+#
 # Toutes les variables sont surchargeables : make deploy BRANCH=dev PORT=3440
 # =============================================================================
 
@@ -39,6 +44,12 @@ REMOTE_DIR      ?= /var/www/arstm-demo
 # sudo uniquement si on n’est pas root
 SUDO            := $(shell [ "$$(id -u)" = "0" ] || echo sudo)
 
+# Docker : sudo seulement si l’utilisateur ne peut pas parler au démon
+DOCKER_SUDO     := $(shell docker info >/dev/null 2>&1 || ([ "$$(id -u)" = "0" ] || echo sudo))
+COMPOSE         ?= $(DOCKER_SUDO) docker compose
+CONTAINER       := arstm-web
+HEALTH_TIMEOUT  ?= 60
+
 # Rendu des gabarits nginx
 RENDER = sed -e 's|__DOMAIN__|$(DOMAIN)|g' \
              -e 's|__PORT__|$(PORT)|g' \
@@ -48,7 +59,9 @@ RENDER = sed -e 's|__DOMAIN__|$(DOMAIN)|g' \
 .DEFAULT_GOAL := help
 .PHONY: help doctor server-deps install build publish deploy setup \
         nginx-init nginx-ssl nginx-test nginx-reload nginx-remove \
-        certbot certbot-renew-test status logs check-dns upload remote-deploy clean
+        certbot certbot-renew-test status logs check-dns upload remote-deploy clean \
+        nginx-proxy-init docker-install docker-build docker-up docker-down docker-restart \
+        docker-logs docker-ps docker-wait docker-deploy docker-setup docker-prune
 
 # ---- Aide ------------------------------------------------------------------
 help: ## Affiche cette aide
@@ -56,8 +69,8 @@ help: ## Affiche cette aide
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
-	@echo "Premier déploiement : make setup EMAIL=vous@domaine"
-	@echo "Mise à jour         : make deploy"
+	@echo "Premier déploiement : make setup EMAIL=vous@domaine     (Docker : make docker-setup EMAIL=…)"
+	@echo "Mise à jour         : make deploy                       (Docker : make docker-deploy)"
 
 # ---- Vérifications serveur -------------------------------------------------
 doctor: ## Vérifie les prérequis (nginx, certbot, node, port, DNS)
@@ -66,6 +79,8 @@ doctor: ## Vérifie les prérequis (nginx, certbot, node, port, DNS)
 	@printf "rsync    : "; (rsync --version 2>/dev/null | head -1 || echo "ABSENT → make server-deps")
 	@printf "node     : "; (node -v 2>/dev/null || echo "ABSENT (Node 22 LTS requis pour le build)")
 	@printf "npm      : "; (npm -v 2>/dev/null || echo "ABSENT")
+	@printf "docker   : "; (docker --version 2>/dev/null || echo "ABSENT (mode Docker uniquement → make docker-install)")
+	@printf "compose  : "; (docker compose version 2>/dev/null || echo "ABSENT (mode Docker uniquement)")
 	@printf "port $(PORT): "; \
 	  if command -v ss >/dev/null && ss -ltn 2>/dev/null | grep -q ":$(PORT) "; then \
 	    echo "déjà en écoute (normal si nginx-init a été lancé, sinon conflit)"; \
@@ -184,6 +199,81 @@ status: ## Teste l’app interne, le HTTP et le HTTPS public
 
 logs: ## Affiche les dernières erreurs nginx du site
 	$(SUDO) tail -n 50 /var/log/nginx/$(DOMAIN).error.log /var/log/nginx/arstm-app.error.log 2>/dev/null || true
+
+# ---- Docker ----------------------------------------------------------------
+docker-install: ## Installe Docker Engine et Compose v2 (Ubuntu/Debian)
+	$(SUDO) apt-get update
+	$(SUDO) apt-get install -y docker.io docker-compose-v2
+	$(SUDO) systemctl enable --now docker
+	@echo "✓ Docker installé. Sans sudo : sudo usermod -aG docker $$USER (puis reconnectez-vous)."
+
+nginx-proxy-init: ## Mode Docker : vhost public seul (désactive le serveur interne de l’hôte)
+	@test -d $(NGINX_AVAILABLE) || (echo "$(NGINX_AVAILABLE) introuvable : nginx est-il installé ?" && exit 1)
+	$(SUDO) mkdir -p $(ACME_ROOT)/.well-known/acme-challenge
+	@if [ -e $(NGINX_ENABLED)/$(APP_NAME).conf ]; then \
+	  echo "Désactivation du serveur interne de l’hôte ($(APP_NAME).conf) : le conteneur prend le port $(PORT)"; \
+	  $(SUDO) unlink $(NGINX_ENABLED)/$(APP_NAME).conf; fi
+	@mkdir -p $(BUILD_TMP)
+	@if [ -f /etc/letsencrypt/live/$(DOMAIN)/fullchain.pem ]; then \
+	  echo "Certificat déjà présent : installation du vhost HTTPS"; \
+	  $(RENDER) $(TPL_DIR)/arstm.selys.app.conf > $(BUILD_TMP)/$(DOMAIN).conf; \
+	else \
+	  $(RENDER) $(TPL_DIR)/arstm.selys.app.http.conf > $(BUILD_TMP)/$(DOMAIN).conf; \
+	fi
+	$(SUDO) install -m 644 $(BUILD_TMP)/$(DOMAIN).conf $(NGINX_AVAILABLE)/$(DOMAIN).conf
+	$(SUDO) ln -sf $(NGINX_AVAILABLE)/$(DOMAIN).conf $(NGINX_ENABLED)/$(DOMAIN).conf
+	@$(MAKE) --no-print-directory nginx-test nginx-reload
+	@echo "✓ nginx de l’hôte : $(DOMAIN) → conteneur 127.0.0.1:$(PORT)"
+
+docker-build: ## Construit l’image Docker (build Angular inclus)
+	$(COMPOSE) build
+
+docker-up: ## Démarre ou met à jour le conteneur (127.0.0.1:3439)
+	@if [ -e $(NGINX_ENABLED)/$(APP_NAME).conf ]; then \
+	  echo "Le nginx de l’hôte sert déjà le port $(PORT) (mode sans Docker)."; \
+	  echo "Lancez d’abord : make nginx-proxy-init"; exit 1; fi
+	PORT=$(PORT) $(COMPOSE) up -d --build --remove-orphans
+	@$(MAKE) --no-print-directory docker-wait
+
+docker-wait: ## Attend que le conteneur soit « healthy »
+	@printf "Attente du conteneur $(CONTAINER)"; i=0; st=""; \
+	while [ $$i -lt $(HEALTH_TIMEOUT) ]; do \
+	  st=$$($(DOCKER_SUDO) docker inspect -f '{{.State.Health.Status}}' $(CONTAINER) 2>/dev/null); \
+	  if [ "$$st" = "healthy" ]; then echo " ✓ healthy"; exit 0; fi; \
+	  printf "."; sleep 2; i=$$((i+2)); \
+	done; \
+	echo " ✗ état : $${st:-inconnu}"; $(COMPOSE) logs --tail 30 web; exit 1
+
+docker-down: ## Arrête et retire le conteneur (l’image est conservée)
+	$(COMPOSE) down
+
+docker-restart: ## Redémarre le conteneur
+	$(COMPOSE) restart web
+	@$(MAKE) --no-print-directory docker-wait
+
+docker-logs: ## Suit les logs du conteneur (Ctrl+C pour quitter)
+	$(COMPOSE) logs -f --tail 100 web
+
+docker-ps: ## État du conteneur
+	$(COMPOSE) ps
+
+docker-prune: ## Supprime les anciennes images non utilisées
+	$(DOCKER_SUDO) docker image prune -f
+
+docker-setup: ## Mode Docker : premier déploiement complet (EMAIL=… requis)
+	@test -n "$(EMAIL)" || (echo "Précisez un e-mail : make docker-setup EMAIL=vous@domaine" && exit 1)
+	@$(MAKE) --no-print-directory nginx-proxy-init
+	@$(MAKE) --no-print-directory docker-up
+	@$(MAKE) --no-print-directory certbot EMAIL=$(EMAIL)
+	@$(MAKE) --no-print-directory status
+
+docker-deploy: ## Mode Docker : git pull + reconstruction de l’image + redémarrage
+	git fetch origin $(BRANCH)
+	git checkout $(BRANCH)
+	git pull --ff-only origin $(BRANCH)
+	@$(MAKE) --no-print-directory docker-up
+	@$(MAKE) --no-print-directory docker-prune
+	@$(MAKE) --no-print-directory status
 
 # ---- Depuis votre poste (facultatif) ---------------------------------------
 upload: build ## Build en local puis envoi du build sur le serveur (SSH=user@ip)

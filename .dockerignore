@@ -1,0 +1,17 @@
+# Le contexte Docker n’a besoin que des sources
+node_modules
+dist
+.angular
+.git
+.github
+.vscode
+.idea
+.claude
+.deploy-tmp
+*.log
+.DS_Store
+Dockerfile
+docker-compose*.yml
+.dockerignore
+README.md
+deploy/README.md

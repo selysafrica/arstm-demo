@@ -15,12 +15,19 @@ npm run build      # build de production dans dist/
 
 ## Déploiement (arstm.selys.app)
 
-Configs nginx dans `deploy/nginx/` et commandes dans le `Makefile` (`make help`). Guide complet : [deploy/README.md](deploy/README.md).
+Configs nginx dans `deploy/nginx/`, image dans `Dockerfile` et `docker-compose.yml`, commandes dans le `Makefile` (`make help`). Guide complet : [deploy/README.md](deploy/README.md).
 
 ```bash
-make setup EMAIL=vous@domaine   # premier déploiement sur le VPS
-make deploy                     # mises à jour
+# Avec Docker (recommandé)
+make docker-setup EMAIL=vous@domaine   # premier déploiement sur le VPS
+make docker-deploy                     # mises à jour
+
+# Sans Docker
+make setup EMAIL=vous@domaine
+make deploy
 ```
+
+En local : `docker compose up -d --build` puis http://127.0.0.1:3439.
 
 ## Pages
 
