@@ -7,12 +7,14 @@
 #
 # Premier déploiement (sur le serveur, dans le clone du dépôt) :
 #   make doctor                       # vérifie nginx, certbot, node, DNS, port
-#   make setup EMAIL=vous@domaine     # nginx-init + build + publish + certbot + https
+#   make setup EMAIL=vous@domaine     # nginx-init + build-static + publish + certbot + https
 #
 # Mises à jour suivantes :
-#   make deploy                       # git pull + build + publish + reload
+#   make deploy                       # git pull + build-static + publish + reload
 #
 # Variante Docker (le build tourne dans un conteneur nginx sur 127.0.0.1:3439) :
+#   make build                        # construit l’image Docker
+#   make up                           # démarre / met à jour le conteneur
 #   make docker-install               # Docker Engine + Compose v2 (si absents)
 #   make docker-setup EMAIL=vous@domaine
 #   make docker-deploy                # mises à jour
@@ -57,7 +59,7 @@ RENDER = sed -e 's|__DOMAIN__|$(DOMAIN)|g' \
              -e 's|__ACME_ROOT__|$(ACME_ROOT)|g'
 
 .DEFAULT_GOAL := help
-.PHONY: help doctor server-deps install build publish deploy setup \
+.PHONY: help doctor server-deps install build up build-static publish deploy setup \
         nginx-init nginx-ssl nginx-test nginx-reload nginx-remove \
         certbot certbot-renew-test status logs check-dns upload remote-deploy clean \
         nginx-proxy-init docker-install docker-build docker-up docker-down docker-restart \
@@ -105,13 +107,13 @@ server-deps: ## Installe nginx, certbot et rsync (Ubuntu/Debian)
 install: ## Installe les dépendances npm (npm ci)
 	npm ci --no-audit --no-fund
 
-build: install ## Build de production Angular → dist/arstm-demo/browser
+build-static: install ## Mode sans Docker : build Angular → dist/arstm-demo/browser
 	npx ng build --configuration production
 	@test -f $(DIST_DIR)/index.html || (echo "Build introuvable dans $(DIST_DIR)" && exit 1)
 	@echo "✓ Build prêt : $(DIST_DIR)"
 
 publish: ## Copie le build dans le dossier web servi par le port interne
-	@test -f $(DIST_DIR)/index.html || (echo "Lancez d’abord : make build" && exit 1)
+	@test -f $(DIST_DIR)/index.html || (echo "Lancez d’abord : make build-static" && exit 1)
 	$(SUDO) mkdir -p $(WEB_ROOT)
 	$(SUDO) rsync -a --delete $(DIST_DIR)/ $(WEB_ROOT)/
 	$(SUDO) find $(WEB_ROOT) -type d -exec chmod 755 {} +
@@ -177,16 +179,16 @@ certbot-renew-test: ## Simule le renouvellement automatique du certificat
 setup: ## Premier déploiement complet (EMAIL=… requis)
 	@test -n "$(EMAIL)" || (echo "Précisez un e-mail : make setup EMAIL=vous@domaine" && exit 1)
 	@$(MAKE) --no-print-directory nginx-init
-	@$(MAKE) --no-print-directory build
+	@$(MAKE) --no-print-directory build-static
 	@$(MAKE) --no-print-directory publish
 	@$(MAKE) --no-print-directory certbot EMAIL=$(EMAIL)
 	@$(MAKE) --no-print-directory status
 
-deploy: ## Mise à jour : git pull + build + publish + reload
+deploy: ## Mise à jour sans Docker : git pull + build-static + publish + reload
 	git fetch origin $(BRANCH)
 	git checkout $(BRANCH)
 	git pull --ff-only origin $(BRANCH)
-	@$(MAKE) --no-print-directory build
+	@$(MAKE) --no-print-directory build-static
 	@$(MAKE) --no-print-directory publish
 	@$(MAKE) --no-print-directory nginx-reload
 	@$(MAKE) --no-print-directory status
@@ -201,6 +203,10 @@ logs: ## Affiche les dernières erreurs nginx du site
 	$(SUDO) tail -n 50 /var/log/nginx/$(DOMAIN).error.log /var/log/nginx/arstm-app.error.log 2>/dev/null || true
 
 # ---- Docker ----------------------------------------------------------------
+build: docker-build ## Construit l’image Docker (alias de docker-build)
+
+up: docker-up ## Démarre ou met à jour le conteneur sur 127.0.0.1:3439 (alias de docker-up)
+
 docker-install: ## Installe Docker Engine et Compose v2 (Ubuntu/Debian)
 	$(SUDO) apt-get update
 	$(SUDO) apt-get install -y docker.io docker-compose-v2
@@ -276,7 +282,7 @@ docker-deploy: ## Mode Docker : git pull + reconstruction de l’image + redéma
 	@$(MAKE) --no-print-directory status
 
 # ---- Depuis votre poste (facultatif) ---------------------------------------
-upload: build ## Build en local puis envoi du build sur le serveur (SSH=user@ip)
+upload: build-static ## Build en local puis envoi du build sur le serveur (SSH=user@ip)
 	@test -n "$(SSH)" || (echo "Précisez la cible : make upload SSH=user@ip" && exit 1)
 	rsync -az --delete --rsync-path="sudo rsync" $(DIST_DIR)/ $(SSH):$(WEB_ROOT)/
 	ssh $(SSH) "sudo systemctl reload nginx"

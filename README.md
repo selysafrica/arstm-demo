@@ -27,7 +27,7 @@ make setup EMAIL=vous@domaine
 make deploy
 ```
 
-En local : `docker compose up -d --build` puis http://127.0.0.1:3439.
+En local : `make build` puis `make up`, et le site est sur http://127.0.0.1:3439.
 
 ## Pages
 

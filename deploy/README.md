@@ -64,12 +64,15 @@ cd /var/www/arstm-demo && make docker-deploy   # git pull → reconstruction →
 
 | Commande | Effet |
 |---|---|
+| `make build` | Construit l’image Docker (alias de `docker-build`) |
+| `make up` | Construit si besoin, démarre ou met à jour le conteneur et attend qu’il soit `healthy` (alias de `docker-up`) |
 | `make docker-ps` | État du conteneur (dont `healthy`) |
 | `make docker-logs` | Logs nginx du conteneur en continu |
 | `make docker-restart` | Redémarre le conteneur |
 | `make docker-down` | Arrête le conteneur (l’image est conservée) |
-| `make docker-build` | Reconstruit l’image sans la démarrer |
 | `make docker-prune` | Supprime les images obsolètes |
+
+> En mode sans Docker, le build Angular s’appelle `make build-static`.
 
 Variables utiles : `PORT` (port publié sur 127.0.0.1, 3439 par défaut), `IMAGE_TAG` (tag de l’image, `latest` par défaut), `BRANCH`.
 
@@ -94,7 +97,7 @@ make setup EMAIL=vous@domaine        # nginx-init → build → publish → cert
 `make setup` enchaîne :
 
 1. `nginx-init` : installe le serveur interne et le vhost HTTP, `nginx -t`, reload ;
-2. `build` : `npm ci` puis build de production ;
+2. `build-static` : `npm ci` puis build de production ;
 3. `publish` : copie `dist/arstm-demo/browser/` dans `/var/www/arstm.selys.app` ;
 4. `certbot` : certificat Let’s Encrypt (méthode webroot, aucune coupure de nginx) ;
 5. `nginx-ssl` : installe le vhost HTTPS, `nginx -t`, reload ;
