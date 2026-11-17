@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Icon } from '../../shared/icon';
 import { Faq, ResourceCard, SectionHead, toneOf } from '../../shared/ui';
@@ -47,6 +47,26 @@ export default class Home {
   protected readonly school = computed(() => this.schools[this.schoolIdx()]);
 
   protected readonly query = signal('');
+
+  /** Vidéo du bandeau : chargée après le premier rendu, affichée seulement une fois en lecture. */
+  private readonly heroVideo = viewChild<ElementRef<HTMLVideoElement>>('heroVideo');
+  protected readonly videoReady = signal(false);
+
+  constructor() {
+    afterNextRender(() => {
+      const video = this.heroVideo()?.nativeElement;
+      if (!video) return;
+      const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
+      // Mouvement réduit ou économie de données : on garde la photo et on ne télécharge pas la vidéo.
+      if (reducedMotion || saveData) return;
+      video.muted = true; // la propriété (et pas seulement l’attribut) est exigée pour l’autoplay
+      video.src = IMG.heroVideo;
+      video.play().catch(() => {
+        /* lecture automatique refusée : la photo reste affichée */
+      });
+    });
+  }
 
   protected prev() {
     this.photoIdx.update((i) => (i + this.photos.length - 1) % this.photos.length);

@@ -12,6 +12,8 @@ export const IMG = {
   douala: 'img/delegation-douala.jpg',
   reunion: 'img/reunion.jpg',
   conference: 'img/conference.jpg',
+  dg: 'img/directeur-general.jpg',
+  heroVideo: 'video/hero.mp4',
   appel: 'img/appel-offres.jpg',
   aerien: 'img/campus-aerien.jpg',
 } as const;
